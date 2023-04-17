@@ -1,9 +1,10 @@
-# Your name: 
-# Your student id:
-# Your email:
-# List who you have worked with on this homework:
+# Your name: Syeda Reza
+# Your student id: 4782 7700
+# Your email: syerez@umich.edu
+# List who you have worked with on this homework: Elijah Cantu
 
 import matplotlib.pyplot as plt
+
 import os
 import sqlite3
 import unittest
@@ -18,12 +19,40 @@ def load_rest_data(db):
     pass
 
 def plot_rest_categories(db):
-    """
-    This function accepts a file name of a database as a parameter and returns a dictionary. The keys should be the
-    restaurant categories and the values should be the number of restaurants in each category. The function should
-    also create a bar chart with restaurant categories and the count of number of restaurants in each category.
-    """
-    pass
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db)
+    cur = conn.cursor()
+    cur.execute('SELECT categories.category, categories.id FROM categories')
+    categories = cur.fetchall()
+    conn.commit()
+
+    cur.execute('SELECT category_id, COUNT(*) as COUNT FROM restaurants GROUP BY CATEGORY_ID')
+    number = cur.fetchall()
+    conn.commit()
+
+    categories = {}
+    counter = 0
+    for category in categories:
+        categories[category[0]] = number[counter][1]
+        counter += 1
+
+    restCategories= dict(sorted(categories.items()))
+    decRestCats = dict(sorted(categories.items(),
+                           key=lambda item: item[1],
+                           reverse=False))
+    
+    #creating bar chart
+    restaurants = list(decRestCats.keys())
+    count = list(decRestCats.values())
+
+    plt.barh(restaurants, count, color='blue')
+    plt.title('Type of Restaurant on South University Ave')
+    plt.xlabel('Number of Restaurants')
+    plt.ylabel('Restaurant Categories')
+    plt.tight_layout()
+    plt.show()
+
+    return restCategories
 
 def find_rest_in_building(building_num, db):
     '''
@@ -49,7 +78,7 @@ def get_highest_rating(db): #Do this through DB as well
 
 #Try calling your functions here
 def main():
-    pass
+    plot_rest_categories('South_U_Restaurants.db')
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
