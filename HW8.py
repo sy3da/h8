@@ -16,7 +16,36 @@ def load_rest_data(db):
     and each inner key is a dictionary, where the key:value pairs should be the category, 
     building, and rating for the restaurant.
     """
-    pass
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db)
+    cur = conn.cursor()
+
+    cur.execute('SELECT name, rating, category_id, building_id FROM restaurants')
+    dataTable = cur.fetchall()
+    cur.execute('SELECT id, category FROM categories')
+    categoryGroup = cur.fetchall()
+    cur.execute('SELECT id, building FROM buildings')
+    buildingsGroup = cur.fetchall()
+    conn.commit()
+    
+    finalDict = {}
+    counter = 0
+    for item in dataTable:
+        innerDict = {}
+        for row in categoryGroup:
+            if row[0] == item[2]:
+                innerDict['category'] = row[1]
+
+        for row in buildingsGroup:
+            if row[0] == item[3]:
+                innerDict['building'] = row[1]
+
+        innerDict['rating'] = item[1]
+
+        finalDict[item[0]] = innerDict
+        innerDict.clear()
+
+    return finalDict
 
 def plot_rest_categories(db):
     path = os.path.dirname(os.path.abspath(__file__))
@@ -41,12 +70,13 @@ def plot_rest_categories(db):
     restaurants = list(decRestCats.keys())
     numofRests = list(decRestCats.values())
 
-    plt.barh(restaurants, numofRests, color='blue')
+    plt.barh(restaurants, numofRests)
     plt.title('Type of Restaurant on South University Ave')
     plt.xlabel('Number of Restaurants')
     plt.ylabel('Restaurant Categories')
     plt.tight_layout()
     plt.show()
+    plt.savefig("plot_rest.png")
 
     return restCategories
 
