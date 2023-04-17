@@ -31,21 +31,17 @@ def plot_rest_categories(db):
     conn.commit()
 
     categories = {}
-    counter = 0
+    index = 0
     for category in categories:
-        categories[category[0]] = number[counter][1]
-        counter += 1
+        categories[category[0]] = number[index][1]
+        index += 1
 
     restCategories= dict(sorted(categories.items()))
-    decRestCats = dict(sorted(categories.items(),
-                           key=lambda item: item[1],
-                           reverse=False))
-    
-    #creating bar chart
+    decRestCats = dict(sorted(categories.items(), key=lambda item: item[1], reverse=False))
     restaurants = list(decRestCats.keys())
-    count = list(decRestCats.values())
+    numofRests = list(decRestCats.values())
 
-    plt.barh(restaurants, count, color='blue')
+    plt.barh(restaurants, numofRests, color='blue')
     plt.title('Type of Restaurant on South University Ave')
     plt.xlabel('Number of Restaurants')
     plt.ylabel('Restaurant Categories')
