@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import os
 import sqlite3
 import unittest
+import operator
 
 def load_rest_data(db):
     """
@@ -40,7 +41,7 @@ def load_rest_data(db):
             if row[0] == item[3]:
                 innerDict['building'] = row[1]
 
-        innerDict['rating'] = item[1]
+        innerDict['rating'] = int(item[1])
 
         finalDict[item[0]] = innerDict
         innerDict.clear()
@@ -86,6 +87,27 @@ def find_rest_in_building(building_num, db):
     restaurant names. You need to find all the restaurant names which are in the specific building. The restaurants 
     should be sorted by their rating from highest to lowest.
     '''
+    result = []
+    ratingAndName = {}
+    database = load_rest_data(db)
+    tuples = database.items()
+    for item in tuples: 
+        if item[1]['building'] == building_num:
+            ratingAndName[item[0]] = item[1]['rating']
+    
+    sorted_ratingNName = dict( sorted(ratingAndName.items(), key=operator.itemgetter(1),reverse=True))
+    
+    result = sorted_ratingNName.keys()
+    return result
+
+
+    #d = {1: 2, 3: 4, 4: 3, 2: 1, 0: 0}
+    #print('Original dictionary : ', d)
+    #sorted_d = sorted(d.items(), key=operator.itemgetter(1))
+    #print('Dictionary in ascending order by value : ',sorted_d)
+    #sorted_d = dict( sorted(d.items(), key=operator.itemgetter(1),reverse=True))
+    #print('Dictionary in descending order by value : ',sorted_d)
+
     pass
 
 #EXTRA CREDIT
