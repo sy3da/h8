@@ -30,7 +30,6 @@ def load_rest_data(db):
     conn.commit()
     
     finalDict = {}
-    #count = 0
     for item in dataTable:
         innerDict = {}
         
@@ -43,15 +42,6 @@ def load_rest_data(db):
                 innerDict['building'] = row[1]
         innerDict['rating'] = float(item[1])
         finalDict[item[0]] = innerDict
-        #if count == 0:
-            #print(finalDict)
-            #count+=1
-
-
-        #swapping positions of category and building keys
-        #res.clear()
-        #print(finalDict)
-        print(finalDict)
 
     return finalDict
 
@@ -62,31 +52,32 @@ def plot_rest_categories(db):
     cur.execute('SELECT categories.category, categories.id FROM categories')
     categories = cur.fetchall()
     conn.commit()
-
     cur.execute('SELECT category_id, COUNT(*) as COUNT FROM restaurants GROUP BY CATEGORY_ID')
     number = cur.fetchall()
     conn.commit()
 
-    categories = {}
+    restCategories = {}
     index = 0
     for category in categories:
-        categories[category[0]] = number[index][1]
+        restCategories[category[0]] = int(number[index][1])
         index += 1
 
-    restCategories= dict(sorted(categories.items()))
-    decRestCats = dict(sorted(categories.items(), key=lambda item: item[1], reverse=False))
-    restaurants = list(decRestCats.keys())
-    numofRests = list(decRestCats.values())
+    restCatsSorted= dict(sorted(restCategories.items()))
+    decRestCats = dict(sorted(restCategories.items(),key=lambda item: item[1],reverse=False))
+    
+    yaxis = list(decRestCats.keys())
+    xaxis = list(decRestCats.values())
 
-    plt.barh(restaurants, numofRests)
-    plt.title('Type of Restaurant on South University Ave')
+    plt.barh(yaxis, xaxis, color = "tab:blue")
     plt.xlabel('Number of Restaurants')
     plt.ylabel('Restaurant Categories')
+    plt.title('Types of Restuarant on South University Ave')
     plt.tight_layout()
-    plt.show()
-    plt.savefig("plot_rest.png")
+    plt.savefig("plot_rest_categories_output.png")
 
-    return restCategories
+
+    return restCatsSorted
+
 
 def find_rest_in_building(building_num, db):
     '''
@@ -112,15 +103,6 @@ def find_rest_in_building(building_num, db):
     return result
 
 
-    #d = {1: 2, 3: 4, 4: 3, 2: 1, 0: 0}
-    #print('Original dictionary : ', d)
-    #sorted_d = sorted(d.items(), key=operator.itemgetter(1))
-    #print('Dictionary in ascending order by value : ',sorted_d)
-    #sorted_d = dict( sorted(d.items(), key=operator.itemgetter(1),reverse=True))
-    #print('Dictionary in descending order by value : ',sorted_d)
-
-    pass
-
 #EXTRA CREDIT
 def get_highest_rating(db): #Do this through DB as well
     """
@@ -133,11 +115,72 @@ def get_highest_rating(db): #Do this through DB as well
     The second bar chart displays the buildings along the y-axis and their ratings along the x-axis 
     in descending order (by rating).
     """
-    pass
+    result = []
+    database = load_rest_data(db)
+    database = database.items()
+    maxRating = 0
+    highestCat = ''
+    highestBuild = ''
+    for item in database:
+        if item[1]['rating'] > maxRating:
+            maxRating = item[1]['rating']
+            highestCat = item[1]['category']
+            highestBuild = item[1]['building']
+    #print(highestCat)
+    #print(maxRating)
+    
+    sumRatingCat = 0
+    countCat = 0
+    sumRatingBuild = 0
+    countBuild = 0
+    for item in database:
+        #if item[1]['category'] == highestCat:
+        #    sumRatingCat += item[1]['rating']
+        #x    countCat+=1
+        if item[1]['building'] == highestBuild:
+            sumRatingBuild += item[1]['rating']
+            countBuild += 1
+
+    sumRatings = {}
+    countRating = {}
+    averageRatings = {}
+
+    for item in database:
+        if item[1]['category'] in sumRatings:
+            sumRatings[item[1]['category']] += item[1]['rating']
+            countRating[item[1]['category']] += 1
+        else:
+            sumRatings[item[1]['category']] = item[1]['rating']
+            countRating[item[1]['category']] = 1
+    
+    for item in sumRatings.items():
+        averageRatings[item[0]] = item[1]/countRating[item[0]]
+    
+    maxAvgRat = 0
+    for key in averageRatings:
+        if averageRatings[key] > maxAvgRat:
+            highestCat = key
+            maxAvgRat = averageRatings[key]
+
+    #sorted_avgRats = sorted(averageRatings.items(), key=operator.itemgetter(1),reverse=True)
+   # sorted_avgRats = sorted_avgRats.items()
+    #firstTup = (sorted_avgRats[0][0], sorted_avgRats[0][1])
+    firstTup = (highestCat, maxAvgRat)
+    
+    #firstTup = (highestCat, sumRatingCat/countCat)
+    secTup = (highestBuild, sumRatingBuild/countBuild)
+
+    result.append(firstTup)
+    result.append(secTup)
+
+    return result
 
 #Try calling your functions here
 def main():
+    load_rest_data('South_U_Restaurants.db')
     plot_rest_categories('South_U_Restaurants.db')
+    get_highest_rating('South_U_Restaurants.db')
+
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
