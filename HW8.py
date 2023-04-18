@@ -30,9 +30,10 @@ def load_rest_data(db):
     conn.commit()
     
     finalDict = {}
-    counter = 0
+    #count = 0
     for item in dataTable:
         innerDict = {}
+        
         for row in categoryGroup:
             if row[0] == item[2]:
                 innerDict['category'] = row[1]
@@ -40,11 +41,17 @@ def load_rest_data(db):
         for row in buildingsGroup:
             if row[0] == item[3]:
                 innerDict['building'] = row[1]
-
-        innerDict['rating'] = int(item[1])
-
+        innerDict['rating'] = float(item[1])
         finalDict[item[0]] = innerDict
-        innerDict.clear()
+        #if count == 0:
+            #print(finalDict)
+            #count+=1
+
+
+        #swapping positions of category and building keys
+        #res.clear()
+        #print(finalDict)
+        print(finalDict)
 
     return finalDict
 
@@ -90,14 +97,18 @@ def find_rest_in_building(building_num, db):
     result = []
     ratingAndName = {}
     database = load_rest_data(db)
+    #print(database)
     tuples = database.items()
+    #print(tuples)
     for item in tuples: 
         if item[1]['building'] == building_num:
             ratingAndName[item[0]] = item[1]['rating']
     
     sorted_ratingNName = dict( sorted(ratingAndName.items(), key=operator.itemgetter(1),reverse=True))
     
-    result = sorted_ratingNName.keys()
+    for item in sorted_ratingNName.keys():
+        result.append(item)
+
     return result
 
 
